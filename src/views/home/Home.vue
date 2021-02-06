@@ -3,14 +3,14 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
-    <scroll>
+    <scroll class="content" ref="scroll">
       <home-swiper :banners="banners" />
       <recommend-view :recommends="recommends" />
       <feature-view />
       <tab-control class="tab-control" :titles="['流行','新款','精选']" @tabClick="tabClick" />
       <goods-list :goods="showGoods" />
     </scroll>
-
+    <back-top @click.native="backClick"/>
   </div>
 </template>
 
@@ -25,6 +25,7 @@
   import TabControl from 'components/content/tabControl/TabControl';
   import GoodsList from 'components/content/goods/GoodsList';
   import Scroll from 'components/common/scroll/Scroll';
+  import BackTop from 'components/content/backTop/BackTop'
   //3.导入的方法
   import { getHomeMultidata, getHomeGoods } from 'network/home.js';
 
@@ -37,7 +38,8 @@
       FeatureView,
       TabControl,
       GoodsList,
-      Scroll
+      Scroll,
+      BackTop
     },
     data() {
       return {
@@ -82,7 +84,9 @@
             break
         }
       },
-
+      backClick(){
+        this.$refs.scroll.scroll.scrollTo(0, 0, 1000)
+      },
       /*
       网络请求相关的方法
       **/
