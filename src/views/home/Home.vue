@@ -3,14 +3,19 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
-    <scroll class="content" ref="scroll">
+    <scroll class="content" ref="scroll"
+      :probe-type=3 
+      @scroll="contentScroll" 
+      :pull-up-load=true
+      @pullingUp="loadMore"
+    >
       <home-swiper :banners="banners" />
       <recommend-view :recommends="recommends" />
       <feature-view />
       <tab-control class="tab-control" :titles="['流行','新款','精选']" @tabClick="tabClick" />
       <goods-list :goods="showGoods" />
     </scroll>
-    <back-top @click.native="backClick"/>
+    <back-top @click.native="backClick" v-show="isShowBackTop"/>
   </div>
 </template>
 
@@ -28,7 +33,7 @@
   import BackTop from 'components/content/backTop/BackTop'
   //3.导入的方法
   import { getHomeMultidata, getHomeGoods } from 'network/home.js';
-
+  import { debounce } from "common/utils";
   export default {
     name: 'Home',
     components: {
@@ -46,12 +51,14 @@
         result: null,
         banners: [],
         recommends: [],
+        refresh: null,
         goods: {
           'pop': { page: 0, list: [] },
           'new': { page: 0, list: [] },
           'sell': { page: 0, list: [] }
         },
-        currentType: 'pop'
+        currentType: 'pop',
+        isShowBackTop: false
       }
     },
     computed: {
@@ -62,9 +69,21 @@
     created() {
       //1.请求多个数据
       this.getHomeMultidata()
+
+      //2.请求商品信息
       this.getHomeGoods('pop')
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
+      
+      
+    },
+    mounted () {
+      //监听图片加载完成
+      this.refresh = debounce(this.$refs.scroll.refresh,500);
+      
+      this.$bus.$on("handleGoodsListImg",() => {
+        this.refresh();  
+      });
     },
     methods: {
       /**
@@ -85,7 +104,13 @@
         }
       },
       backClick(){
-        this.$refs.scroll.scroll.scrollTo(0, 0, 1000)
+        this.$refs.scroll.scrollTo(0, 0, 300)
+      },
+      contentScroll(position) {
+        this.isShowBackTop = (-position.y) > 1000
+      },
+      loadMore() {
+        this.getHomeGoods(this.currentType)
       },
       /*
       网络请求相关的方法
@@ -102,6 +127,8 @@
         getHomeGoods(type, page).then(res => {
           this.goods[type].list.push(...res.data.list);
           this.goods[type].page += 1;
+
+          this.$refs.scroll.finishPullUp()
         });
       }
     }
