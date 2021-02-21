@@ -79,9 +79,9 @@
     },
     mounted () {
       //监听图片加载完成
-      this.refresh = debounce(this.$refs.scroll.refresh,500);
+      this.refresh = debounce(this.$refs.scroll.refresh,50);
       
-      this.$bus.$on("handleGoodsListImg",() => {
+      this.$bus.$on("handleGoodsListImg",() => {                         
         this.refresh();  
       });
     },
@@ -104,7 +104,7 @@
         }
       },
       backClick(){
-        this.$refs.scroll.scrollTo(0, 0, 300)
+        this.$refs.scroll.scrollTo(0, 0)
       },
       contentScroll(position) {
         this.isShowBackTop = (-position.y) > 1000
